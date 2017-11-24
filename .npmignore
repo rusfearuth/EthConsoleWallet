@@ -1,0 +1,5 @@
+flow-typed/
+src/
+node_modules/ 
+.git/
+.flowconfig

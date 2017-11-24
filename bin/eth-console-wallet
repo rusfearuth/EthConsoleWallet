@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+require('babel-polyfill');
+
+const App = require('../dist/app').default,
+      args = require('../dist/utils/cli').args;
+
+App.main(args);

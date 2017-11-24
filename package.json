@@ -30,6 +30,7 @@
     "bitcore-mnemonic": "^1.5.0",
     "chalk": "^2.3.0",
     "command-line-args": "^4.0.7",
+    "command-line-usage": "^4.0.1",
     "eth-lightwallet": "^3.0.0",
     "fs-extra": "^4.0.2",
     "lodash": "^4.17.4",
