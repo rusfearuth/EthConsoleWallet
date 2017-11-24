@@ -4,7 +4,11 @@
   "author": "Alexander Ustinov <rusfearuth@gmail.com>",
   "license": "Apache License 2.0",
   "keywords": [
-    "eth", "ethereum", "wallet", "cli", "console"
+    "eth",
+    "ethereum",
+    "wallet",
+    "cli",
+    "console"
   ],
   "main": "./dist/",
   "bin": {
@@ -61,5 +65,5 @@
       "transform-object-rest-spread"
     ]
   },
-  "version": "0.1.7"
+  "version": "0.1.8"
 }
