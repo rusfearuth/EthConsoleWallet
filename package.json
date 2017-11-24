@@ -1,13 +1,20 @@
 {
   "name": "eth-console-wallet",
   "description": "Lightweight console wallet for Ethereum",
+  "author": "Alexander Ustinov <rusfearuth@gmail.com>",
+  "license": "Apache License 2.0",
+  "keywords": [
+    "eth",
+    "ethereum",
+    "wallet",
+    "cli",
+    "console"
+  ],
   "main": "./dist/",
   "bin": {
     "eth-console-wallet": "./bin/eth-console-wallet"
   },
   "repository": "https://github.com/rusfearuth/EthConsoleWallet",
-  "author": "Alexander Ustinov <rusfearuth@gmail.com>",
-  "license": "Apache License 2.0",
   "scripts": {
     "clean": "rm -rf dist",
     "prebuild": "yarn clean && mkdir dist/",
@@ -58,5 +65,5 @@
       "transform-object-rest-spread"
     ]
   },
-  "version": "0.1.7"
+  "version": "0.1.8"
 }
