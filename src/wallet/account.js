@@ -1,15 +1,15 @@
 // @flow
 
 import type { ArgsType } from '../utils/cli.types';
-import type { BalanceType } from '../requests/etherscan.types';
+import type { BalanceType } from '../requests/common.types';
 import { writeWallet, readWallet, writeOutput } from '../utils/store';
-import { getBalance } from '../requests/etherscan';
+import { getBalance } from '../requests/common';
 import chalk from 'chalk';
 import { readConfig } from '../utils/store';
-import { getApikey } from '../config';
+import { getApikey, getIpc, getRpcApi } from '../config';
 import type { ConfigType } from '../config/types';
 import ora from 'ora';
-import utils from 'web3-utils';
+import { utils } from 'web3';
 import { isEmpty } from 'lodash';
 
 export const generateAddresses = async (args: ArgsType): Promise<*> => {
@@ -53,18 +53,26 @@ export const generateAddresses = async (args: ArgsType): Promise<*> => {
 };
 
 export const balanceByAddress = async (args: ArgsType): Promise<*> => {
-  const { address, token } = args;
+  const { address, token, ipc, rpc } = args;
   const apikey = await getApikey(args);
-  if (!address || !apikey) {
+  const ipcpath = await getIpc(args);
+  const rpcapi = await getRpcApi(args);
+  if (!address || (!apikey && !ipcpath && !rpcapi)) {
     return;
   }
 
   let spinner = ora(`Loading balance for ${chalk.green(address)}`).start();
-  const { result } = await getBalance(address, apikey);
+  let response: BalanceType = await getBalance(address, { apikey, rpcapi });
+  if (!response) {
+    ora('Something went wrong').fail();
+    return;
+  }
+  const { result } = response;
   const congrate = `Balance of ${chalk.green(address)} is ${chalk.green(
     utils.fromWei(result, 'ether'),
   )} ETH / ${chalk.green(result)} wei`;
   spinner.succeed(congrate);
+  return;
 };
 
 const _buildQueryParams = (params: Object): string =>

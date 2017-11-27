@@ -47,6 +47,18 @@ Before, you use this command, you will need to create MY_ETHERSCAN_TOKEN at [Eth
 $ eth-console-wallet --add --etherscanToken MY_ETHERSCAN_TOKEN
 ```
 
+Or, if you have your own node, you can run it with the next options:
+
+```bash
+$ geth --datadir PATH --syncmode fast --rpc --rpcapi="db,eth,net,web3,personal,web3"
+```
+
+and you can add `rpcapi` to your wallet config:
+
+```bash
+$ eth-console-wallet --add --rpcapi http://address:port
+```
+
 Now, you may ask your account balance.
 
 ```bash

@@ -1,11 +1,5 @@
 // @flow
 
-export type BalanceType = {|
-  +status: string,
-  +message: string,
-  +result: string,
-|};
-
 export type TransactionCountType = {|
   +jsonrpc: string,
   +result: string,

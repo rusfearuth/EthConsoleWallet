@@ -23,6 +23,9 @@ const options: CliOptionType[] = [
   // Wallet info
   { name: 'state', type: Boolean },
 
+  // Wallet balance
+  { name: 'walletBalance', type: Boolean },
+
   // Generate addresses
   { name: 'generate', type: Boolean },
   { name: 'count', type: Number, defaultValue: 1, defaultOption: false },
@@ -32,6 +35,8 @@ const options: CliOptionType[] = [
   { name: 'balance', type: Boolean },
   { name: 'address', type: String },
   { name: 'token', type: String },
+  { name: 'ipc', type: String },
+  { name: 'rpc', type: String },
 
   // Withdraw ETH
   { name: 'withdrawAll', type: Boolean },
@@ -41,6 +46,7 @@ const options: CliOptionType[] = [
   // Config params
   { name: 'add', type: Boolean },
   { name: 'etherscanToken', type: String },
+  { name: 'rpcapi', type: String },
 
   // Help
   { name: 'help', type: Boolean },
@@ -57,6 +63,9 @@ export const checkInitWalletPass = ({ password }: ArgsType): boolean =>
 
 export const isWalletState = ({ state }: ArgsType): boolean => !!state;
 
+export const isWalletBalance = ({ walletBalance }: ArgsType): boolean =>
+  !!walletBalance;
+
 export const isGenerate = ({ generate }: ArgsType): boolean => !!generate;
 export const checkGenerateParams = ({ count, output }: ArgsType): boolean =>
   !!count && count > 0;
@@ -71,8 +80,10 @@ export const checkWithdrawParams = ({ from, to }: ArgsType): boolean =>
   !!from && !!to && !isEmpty(from) && !isEmpty(to);
 
 export const isAdd = ({ add }: ArgsType): boolean => !!add;
-export const checkConfigParams = ({ etherscanToken }: ArgsType): boolean =>
-  !!etherscanToken;
+export const checkConfigParams = ({
+  etherscanToken,
+  rpcapi,
+}: ArgsType): boolean => !!etherscanToken || !!rpcapi;
 
 export const isHelp = ({ help }: ArgsType): boolean => !!help;
 
@@ -113,6 +124,10 @@ const _man = [
       {
         name: 'state',
         description: 'Print information about wallet state',
+      },
+      {
+        name: 'walletBalance',
+        description: 'Print sum of amounts from all wallet addresses',
       },
     ],
   },
@@ -183,7 +198,13 @@ const _man = [
         name: 'etherscanToken',
         typeLabel: 'apikey',
         description:
-          'Api key from [underline]{https://etherscan.io/}. This key will be used for getting balance or send amount of ETH.',
+          '[underline]{Optional}. Api key from [underline]{https://etherscan.io/}. This key will be used for getting balance or send amount of ETH.',
+      },
+      {
+        name: 'rpcapi',
+        typeLabel: 'address',
+        description:
+          '[underline]{Optional}. URL to rpcapi of node. This option will be used for getting balance or send amount of ETH.',
       },
       {
         name: 'datadir',
