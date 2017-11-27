@@ -1,5 +1,5 @@
 // @flow
-import utils from 'web3-utils';
+import { utils } from 'web3';
 import BigNumber from 'bignumber.js';
 import { isString, isNumber } from 'lodash';
 

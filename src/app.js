@@ -1,7 +1,7 @@
 // @flow
 
 import 'babel-polyfill';
-import { initWallet, stateWallet } from './wallet';
+import { initWallet, stateWallet, totalBalance } from './wallet';
 import { generateAddresses, balanceByAddress } from './wallet/account';
 import { sendEntireAmount } from './wallet/transaction';
 import type { ArgsType } from './utils/cli.types';
@@ -9,6 +9,7 @@ import {
   isInitWallet,
   checkInitWalletPass,
   isWalletState,
+  isWalletBalance,
   isGenerate,
   checkGenerateParams,
   isBalance,
@@ -38,6 +39,8 @@ export default class App {
         await initWallet(args);
       } else if (isWalletState(args)) {
         await stateWallet(args);
+      } else if (isWalletBalance(args)) {
+        await totalBalance(args);
       } else if (isGenerate(args)) {
         if (!checkGenerateParams(args)) {
           defaultMessage();
