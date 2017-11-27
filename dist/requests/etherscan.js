@@ -9,15 +9,15 @@ var _index = require('./index');
 
 const BASE_URL = 'https://api.etherscan.io/api';
 
-const getBalance = exports.getBalance = (address, apikey) => (0, _index.fetchGetJson)(BASE_URL, {}, _mapToBalanceQueryParams(address, apikey));
+const getBalance = exports.getBalance = (address, apikey) => (0, _index.fetchGet)(BASE_URL, {}, _mapToBalanceQueryParams(address, apikey));
 
-const getTransactionCount = exports.getTransactionCount = (address, apikey) => (0, _index.fetchGetJson)(BASE_URL, {}, _mapToGetTransactionQueryParams(address, apikey));
+const getTransactionCount = exports.getTransactionCount = (address, apikey) => (0, _index.fetchGet)(BASE_URL, {}, _mapToGetTransactionQueryParams(address, apikey));
 
-const gasPrice = exports.gasPrice = apikey => (0, _index.fetchGetJson)(BASE_URL, { timeout: 30000 }, _mapToGasPriceQueryParams(apikey));
+const gasPrice = exports.gasPrice = apikey => (0, _index.fetchGet)(BASE_URL, { timeout: 30000 }, _mapToGasPriceQueryParams(apikey));
 
-const sendSignedTransaction = exports.sendSignedTransaction = (hex, apikey) => (0, _index.fetchGetJson)(BASE_URL, {}, _mapToSignedTransactionQueryParams(hex, apikey));
+const sendSignedTransaction = exports.sendSignedTransaction = (hex, apikey) => (0, _index.fetchGet)(BASE_URL, {}, _mapToSignedTransactionQueryParams(hex, apikey));
 
-const getTransactionByHash = exports.getTransactionByHash = (txhash, apikey) => (0, _index.fetchGetJson)(BASE_URL, {}, _mapToTransactionByHashQueryParams(txhash, apikey));
+const getTransactionByHash = exports.getTransactionByHash = (txhash, apikey) => (0, _index.fetchGet)(BASE_URL, {}, _mapToTransactionByHashQueryParams(txhash, apikey));
 
 const _mapToBalanceQueryParams = (address, apikey) => ({
   module: 'account',

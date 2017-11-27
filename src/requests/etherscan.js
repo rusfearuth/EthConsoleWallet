@@ -1,6 +1,6 @@
 // @flow
 
-import { fetchGetJson } from './index';
+import { fetchGet } from './index';
 import type { QueryParamsType } from './index.types';
 import type {
   BalanceType,
@@ -16,32 +16,28 @@ export const getBalance = (
   address: string,
   apikey: string,
 ): Promise<BalanceType> =>
-  fetchGetJson(BASE_URL, {}, _mapToBalanceQueryParams(address, apikey));
+  fetchGet(BASE_URL, {}, _mapToBalanceQueryParams(address, apikey));
 
 export const getTransactionCount = (
   address: string,
   apikey: string,
 ): Promise<TransactionCountType> =>
-  fetchGetJson(BASE_URL, {}, _mapToGetTransactionQueryParams(address, apikey));
+  fetchGet(BASE_URL, {}, _mapToGetTransactionQueryParams(address, apikey));
 
 export const gasPrice = (apikey: string): Promise<GasPriceType> =>
-  fetchGetJson(BASE_URL, { timeout: 30000 }, _mapToGasPriceQueryParams(apikey));
+  fetchGet(BASE_URL, { timeout: 30000 }, _mapToGasPriceQueryParams(apikey));
 
 export const sendSignedTransaction = (
   hex: string,
   apikey: string,
 ): Promise<TransactionType> =>
-  fetchGetJson(BASE_URL, {}, _mapToSignedTransactionQueryParams(hex, apikey));
+  fetchGet(BASE_URL, {}, _mapToSignedTransactionQueryParams(hex, apikey));
 
 export const getTransactionByHash = (
   txhash: string,
   apikey: string,
 ): Promise<TransactionByHashType> =>
-  fetchGetJson(
-    BASE_URL,
-    {},
-    _mapToTransactionByHashQueryParams(txhash, apikey),
-  );
+  fetchGet(BASE_URL, {}, _mapToTransactionByHashQueryParams(txhash, apikey));
 
 const _mapToBalanceQueryParams = (
   address: string,

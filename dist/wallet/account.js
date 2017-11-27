@@ -48,6 +48,12 @@ const generateAddresses = exports.generateAddresses = async args => {
 
   const congrate = `Now you have ${_chalk2.default.green(addressCount)} addresses for charging.`;
 
+  const { output } = args;
+  if (!output || (0, _lodash.isEmpty)(output)) {
+    console.log(congrate);
+    return;
+  }
+
   const newAddresses = keystore.getAddresses().slice(addressCount - count);
 
   const addressesOutput = {
@@ -55,18 +61,13 @@ const generateAddresses = exports.generateAddresses = async args => {
     addresses: keystore.getAddresses(),
     newAddresses
   };
-
-  const { output } = args;
-  if (!!output && !(0, _lodash.isEmpty)(output)) {
-    await (0, _store.writeOutput)(args, addressesOutput);
-  }
+  await (0, _store.writeOutput)(args, addressesOutput);
   console.log(congrate);
 };
 
 const balanceByAddress = exports.balanceByAddress = async args => {
   const { address, token } = args;
-  const apikey = await (0, _config.getApikey)(args); // token || (config.etherscan && config.etherscan.apikey);
-
+  const apikey = await (0, _config.getApikey)(args);
   if (!address || !apikey) {
     return;
   }
@@ -75,7 +76,6 @@ const balanceByAddress = exports.balanceByAddress = async args => {
   const { result } = await (0, _etherscan.getBalance)(address, apikey);
   const congrate = `Balance of ${_chalk2.default.green(address)} is ${_chalk2.default.green(_web3Utils2.default.fromWei(result, 'ether'))} ETH / ${_chalk2.default.green(result)} wei`;
   spinner.succeed(congrate);
-  //console.log(congrate);
 };
 
 const _buildQueryParams = params => Object.keys(_extends({ '?': '' }, params)).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');

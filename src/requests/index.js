@@ -4,7 +4,7 @@ import type { QueryParamsType } from './index.types';
 import { isEmpty } from 'lodash';
 import fetch from 'node-fetch';
 
-export const fetchGetJson = <T>(
+export const fetchGet = <T>(
   base: string,
   params: any,
   qr: ?QueryParamsType,
