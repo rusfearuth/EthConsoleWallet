@@ -2,15 +2,16 @@
 
 import type { ArgsType } from '../utils/cli.types';
 import utils from 'web3-utils';
-import { toBigNumber } from '../utils/numbers';
 import {
+  getBalance,
   gasPrice,
   getTransactionCount,
-  getBalance,
   sendSignedTransaction,
-} from '../requests/etherscan';
+} from '../requests/common';
+import type { RequestParamsType } from '../requests/common.types';
+import { toBigNumber } from '../utils/numbers';
 import type { TransactionType } from '../requests/etherscan.types';
-import { getApikey } from '../config';
+import { getApikey, getIpc, getRpcApi } from '../config';
 import { isEmpty } from 'lodash';
 import { txutils, signing } from 'eth-lightwallet';
 import { hasWallet, readWallet } from '../utils/store';
@@ -19,7 +20,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 
 export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
-  const apikey: ?string = await getApikey(args);
+  const apikey = await getApikey(args);
+  const rpcapi = await getRpcApi(args);
   const { from, to, password } = args;
 
   // Needed only for pass Flowtype chekcout
@@ -27,7 +29,7 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
     return;
   }
 
-  if (!apikey || isEmpty(apikey)) {
+  if (!apikey && !rpcapi) {
     console.log(
       `${chalk.underline.red(
         'WARNING:',
@@ -35,7 +37,10 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
     );
     return;
   }
-  const txOptions = await _prepareTxOptions(from, to, apikey);
+  const txOptions = await _prepareTxOptions(from, to, {
+    apikey,
+    rpcapi,
+  });
   const txSigned: ?string = await _buildAndSignTx(
     args,
     from,
@@ -46,29 +51,36 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
     console.log(`${chalk.underline.red('WARNING:')} Tx hasn't been created`);
     return;
   }
-  const tx = await sendSignedTransaction(txSigned, apikey);
+  let spinner = ora('Sending transaction...').start();
+  const { result } = await sendSignedTransaction(txSigned, {
+    apikey,
+    rpcapi,
+  });
 
   const congrate = `Your transaction is ${chalk.green(
-    tx.result,
-  )}.\nYou can check it at https://etherscan.io/tx/${tx.result}`;
-  console.log(congrate);
+    result,
+  )}.\nYou can check it at https://etherscan.io/tx/${result}`;
+  spinner.succeed(congrate);
 };
 
 const _prepareTxOptions = async (
   from: string,
   to: string,
-  apikey: string,
+  config: RequestParamsType,
 ): Promise<TxOptionsType> => {
   let spinner = ora('Loading gas price').start();
-  let resp = await gasPrice(apikey);
+  let resp = await gasPrice(config);
+
   const price = toBigNumber(resp.result);
   spinner.succeed(`Gas price is ${chalk.green(resp.result)}`);
   spinner = ora('Loading transaction count').start();
-  resp = await getTransactionCount(from, apikey);
+
+  resp = await getTransactionCount(from, config);
   const nonce = resp.result;
   spinner.succeed(`Transaction count is ${chalk.green(resp.result)}`);
   spinner = ora('Loading address balance').start();
-  resp = await getBalance(from, apikey);
+
+  resp = await getBalance(from, config);
   const total = toBigNumber(resp.result);
   spinner.succeed(
     `Balance of ${chalk.green(from)} is ${chalk.green(resp.result)}`,

@@ -3,12 +3,12 @@
 import { fetchGet } from './index';
 import type { QueryParamsType } from './index.types';
 import type {
-  BalanceType,
   TransactionCountType,
   TransactionByHashType,
   GasPriceType,
   TransactionType,
 } from './etherscan.types';
+import type { BalanceType } from './common.types';
 
 const BASE_URL: string = 'https://api.etherscan.io/api';
 

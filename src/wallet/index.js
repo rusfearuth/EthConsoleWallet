@@ -9,6 +9,9 @@ import type {
   VaultOptionsType,
 } from './types';
 import { writeWallet, readWallet, hasWallet } from '../utils/store';
+import { getTotalBalance } from '../requests/web3';
+import { utils } from 'web3';
+import ora from 'ora';
 import chalk from 'chalk';
 
 export const initWallet = async (args: ArgsType): Promise<*> => {
@@ -81,6 +84,34 @@ ${chalk.green('WALLET')}
 -----------------------------------------------------------------
 `;
   console.log(message);
+};
+
+export const totalBalance = async (args: ArgsType): Promise<*> => {
+  const result: boolean = await hasWallet(args);
+  if (!result) {
+    console.log(
+      `${chalk.underline.red('WARNING:')} You don't have any wallet yet.`,
+    );
+    return;
+  }
+  const keystore = await readWallet(args);
+
+  let promises: Promise<*>[] = [];
+  let resps: any = [];
+  const addresses: string[] = keystore.getAddresses();
+
+  let spinner = ora('Getting total balance of wallet...').start();
+
+  const balance = await getTotalBalance(addresses, {
+    rpcapi: 'http://localhost:8545',
+  });
+
+  spinner.succeed(
+    `Your wallet balance is ${utils.fromWei(
+      balance.toString(),
+      'ether',
+    )} ETH / ${balance.toString()} Wei`,
+  );
 };
 
 const _createVault = (options: VaultOptionsType): Promise<*> => {

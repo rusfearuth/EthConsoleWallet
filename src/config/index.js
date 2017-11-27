@@ -7,10 +7,18 @@ import chalk from 'chalk';
 
 export const updateConfing = async (args: ArgsType): Promise<*> => {
   let config: ConfigType = await readConfig(args);
-  const { etherscanToken } = args;
+  const { etherscanToken, ipcpath, rpcapi } = args;
   if (etherscanToken && !isEmpty(etherscanToken)) {
     const etherscan = { apikey: etherscanToken };
     config = { ...config, etherscan };
+  }
+  if (ipcpath && !isEmpty(ipcpath)) {
+    const node = { ...(config.node || {}), ipcpath };
+    config = { ...config, node };
+  }
+  if (rpcapi && !isEmpty(rpcapi)) {
+    const node = { ...(config.node || {}), rpcapi };
+    config = { ...config, node };
   }
 
   await writeConfig(args, config);
@@ -22,4 +30,14 @@ export const updateConfing = async (args: ArgsType): Promise<*> => {
 export const getApikey = (args: ArgsType): Promise<*> =>
   readConfig(args).then(
     config => args.token || (config.etherscan && config.etherscan.apikey),
+  );
+
+export const getIpc = (args: ArgsType): Promise<*> =>
+  readConfig(args).then(
+    config => args.ipc || (config.node && config.node.ipcpath),
+  );
+
+export const getRpcApi = (args: ArgsType): Promise<*> =>
+  readConfig(args).then(
+    config => args.rpc || (config.node && config.node.rpcapi),
   );
