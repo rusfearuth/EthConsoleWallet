@@ -30,7 +30,7 @@ Now, you should create a new wallet.
 $ eth-console-wallet --init --passwork MY_PASSWORD
 ```
 
-### Generate addresse
+### Generate address
 
 After, you created the wallet, you should create an address for getting ETH.
 

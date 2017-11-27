@@ -33,6 +33,12 @@ export const generateAddresses = async (args: ArgsType): Promise<*> => {
     addressCount,
   )} addresses for charging.`;
 
+  const { output } = args;
+  if (!output || isEmpty(output)) {
+    console.log(congrate);
+    return;
+  }
+
   const newAddresses: string[] = keystore
     .getAddresses()
     .slice(addressCount - count);
@@ -42,18 +48,13 @@ export const generateAddresses = async (args: ArgsType): Promise<*> => {
     addresses: keystore.getAddresses(),
     newAddresses,
   };
-
-  const { output } = args;
-  if (!!output && !isEmpty(output)) {
-    await writeOutput(args, addressesOutput);
-  }
+  await writeOutput(args, addressesOutput);
   console.log(congrate);
 };
 
 export const balanceByAddress = async (args: ArgsType): Promise<*> => {
   const { address, token } = args;
-  const apikey = await getApikey(args); // token || (config.etherscan && config.etherscan.apikey);
-
+  const apikey = await getApikey(args);
   if (!address || !apikey) {
     return;
   }
@@ -64,7 +65,6 @@ export const balanceByAddress = async (args: ArgsType): Promise<*> => {
     utils.fromWei(result, 'ether'),
   )} ETH / ${chalk.green(result)} wei`;
   spinner.succeed(congrate);
-  //console.log(congrate);
 };
 
 const _buildQueryParams = (params: Object): string =>

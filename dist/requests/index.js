@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fetchGetJson = undefined;
+exports.fetchGet = undefined;
 
 var _lodash = require('lodash');
 
@@ -13,7 +13,7 @@ var _nodeFetch2 = _interopRequireDefault(_nodeFetch);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const fetchGetJson = exports.fetchGetJson = (base, params, qr) => (0, _nodeFetch2.default)(_buildUrl(base, qr), params).then(resp => resp.json());
+const fetchGet = exports.fetchGet = (base, params, qr) => (0, _nodeFetch2.default)(_buildUrl(base, qr), params).then(resp => resp.json());
 
 const _buildUrl = (base, params
 // $FlowFixMe
