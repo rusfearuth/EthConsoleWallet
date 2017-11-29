@@ -53,11 +53,10 @@ export const generateAddresses = async (args: ArgsType): Promise<*> => {
 };
 
 export const balanceByAddress = async (args: ArgsType): Promise<*> => {
-  const { address, token, ipc, rpc } = args;
+  const { address, token, rpc } = args;
   const apikey = await getApikey(args);
-  const ipcpath = await getIpc(args);
   const rpcapi = await getRpcApi(args);
-  if (!address || (!apikey && !ipcpath && !rpcapi)) {
+  if (!address || (!apikey && !rpcapi)) {
     return;
   }
 

@@ -27,9 +27,11 @@ export const getBalance = async (
 export const getTotalBalance = async (
   addresses: string[],
   config: Web3ProviderType,
+  progress?: (number, number, any) => void,
 ): Promise<*> => {
   let promises: Array<Promise<BalanceType>> = [];
   let result = toBigNumber(0);
+  let progressCount: number = 0;
   for (let address of addresses) {
     promises.push(getBalance(address, config));
     if (promises.length === 100) {
@@ -39,6 +41,11 @@ export const getTotalBalance = async (
       resps.forEach(resp => {
         result = result.add(toBigNumber(resp.result));
       });
+
+      progressCount += promises.length;
+      if (!!progress) {
+        progress(progressCount, addresses.length, result);
+      }
 
       promises = [];
     }
@@ -50,6 +57,11 @@ export const getTotalBalance = async (
   resps.forEach(resp => {
     result = result.add(toBigNumber(resp.result));
   });
+
+  progressCount += promises.length;
+  if (!!progress) {
+    progress(progressCount, addresses.length, result);
+  }
 
   promises = [];
 
@@ -71,11 +83,11 @@ export const getTransactionCount = async (
   config: Web3ProviderType,
 ): Promise<*> => {
   const web3 = _getWeb3Client(config);
-  const result: Web3TransactionType = await web3.eth.getTransactionCount(from);
+  const result = await web3.eth.getTransactionCount(from);
   return {
     status: '1',
     message: 'OK',
-    result: result.transactionHash,
+    result: Web3.utils.toHex(result),
   };
 };
 
@@ -84,11 +96,13 @@ export const sendSignedTransaction = async (
   config: Web3ProviderType,
 ): Promise<*> => {
   const web3 = _getWeb3Client(config);
-  const result = await web3.eth.sendSignedTransaction(from);
+  const result: Web3TransactionType = await web3.eth.sendSignedTransaction(
+    from,
+  );
   return {
     status: '1',
     message: 'OK',
-    result,
+    result: result.transactionHash,
   };
 };
 

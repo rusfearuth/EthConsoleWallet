@@ -30,6 +30,7 @@ export type ArgsType = {|
   +withdrawAll?: boolean,
   +from?: string,
   +to?: string,
+  +file?: string,
   // Config
   +add?: boolean,
   +etherscanToken?: string,

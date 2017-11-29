@@ -42,6 +42,9 @@ export const readConfig = ({ datadir }: ArgsType): Promise<ConfigType> =>
     .then(data => fs.readJson(_buildConfigPath(datadir)))
     .catch(error => ({}));
 
+export const readAddresses = ({ file }: ArgsType): Promise<string[]> =>
+  fs.readJson(file).then(data => (data && data.addresses) || []);
+
 const _makeDataDir = (path: string): Promise<*> => fs.mkdir();
 
 const _writeJson = (datadir: string, json: any): Promise<*> =>

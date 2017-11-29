@@ -9,7 +9,8 @@ import type {
   VaultOptionsType,
 } from './types';
 import { writeWallet, readWallet, hasWallet } from '../utils/store';
-import { getTotalBalance } from '../requests/web3';
+import { getTotalBalance } from '../requests/common';
+import { getApikey, getRpcApi } from '../config';
 import { utils } from 'web3';
 import ora from 'ora';
 import chalk from 'chalk';
@@ -87,6 +88,18 @@ ${chalk.green('WALLET')}
 };
 
 export const totalBalance = async (args: ArgsType): Promise<*> => {
+  const apikey = await getApikey(args);
+  const rpcapi = await getRpcApi(args);
+
+  if (!apikey && !rpcapi) {
+    console.log(
+      `${chalk.underline.red(
+        'WARNING:',
+      )} You should pass apikey or rpcapi options.`,
+    );
+    return;
+  }
+
   const result: boolean = await hasWallet(args);
   if (!result) {
     console.log(
@@ -100,11 +113,25 @@ export const totalBalance = async (args: ArgsType): Promise<*> => {
   let resps: any = [];
   const addresses: string[] = keystore.getAddresses();
 
-  let spinner = ora('Getting total balance of wallet...').start();
+  let progress = `0/${addresses.length}`;
+  let spinner = ora(
+    `Getting total balance of wallet... ${chalk.green(progress)} - 0 ETH`,
+  ).start();
 
-  const balance = await getTotalBalance(addresses, {
-    rpcapi: 'http://localhost:8545',
-  });
+  const balance = await getTotalBalance(
+    addresses,
+    {
+      apikey,
+      rpcapi,
+    },
+    (currentProgress: number, total: number, balance) => {
+      progress = `${currentProgress}/${total}`;
+      const etherBalance = utils.fromWei(balance.toString(), 'ether');
+      spinner.text = `Getting total balance of wallet... ${chalk.green(
+        progress,
+      )} - ${etherBalance} ETH`;
+    },
+  );
 
   spinner.succeed(
     `Your wallet balance is ${utils.fromWei(

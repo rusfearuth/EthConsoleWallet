@@ -42,6 +42,7 @@ const options: CliOptionType[] = [
   { name: 'withdraw-all', type: Boolean },
   { name: 'from', type: String },
   { name: 'to', type: String },
+  { name: 'file', type: String },
 
   // Config params
   { name: 'add', type: Boolean },
@@ -106,7 +107,7 @@ export const checkBalanceParams = ({ address }: ArgsType): boolean =>
 export const isWithdrawAll = ({ withdrawAll }: ArgsType): boolean =>
   !!withdrawAll;
 export const checkWithdrawParams = ({ from, to }: ArgsType): boolean =>
-  !!from && !!to && !isEmpty(from) && !isEmpty(to);
+  !!to && !isEmpty(to);
 
 export const isAdd = ({ add }: ArgsType): boolean => !!add;
 export const checkConfigParams = ({
@@ -266,6 +267,12 @@ const _man = [
         name: 'to',
         typeLabel: 'address',
         description: 'To another address',
+      },
+      {
+        name: 'file',
+        typeLabel: 'path',
+        description:
+          '[underline]{Optional}. This file should be json format. Where you write list of addresses for getting total balance for them. File format: { "addresses": [ "0xAddress1", "0xAddress2", "0xAddress3" ]}',
       },
       {
         name: 'password',

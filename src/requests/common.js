@@ -5,12 +5,14 @@ import {
   getTransactionCount as etherscan_getTransactionCount,
   getBalance as etherscan_getBalance,
   sendSignedTransaction as etherscan_sendSignedTransaction,
+  getTotalBalance as etherscan_getTotalBalance,
 } from '../requests/etherscan';
 import {
   gasPrice as web3_gasPrice,
   getTransactionCount as web3_getTransactionCount,
   getBalance as web3_getBalance,
   sendSignedTransaction as web3_sendSignedTransaction,
+  getTotalBalance as web3_getTotalBalance,
 } from '../requests/web3';
 import type { RequestParamsType } from './common.types';
 import { isEmpty } from 'lodash';
@@ -54,4 +56,16 @@ export const sendSignedTransaction = async (
     return await etherscan_sendSignedTransaction(txSigned, apikey);
   }
   return await web3_sendSignedTransaction(txSigned, { rpcapi });
+};
+
+export const getTotalBalance = async (
+  addresses: string[],
+  params: RequestParamsType,
+  progress: (number, number, any) => void,
+): Promise<*> => {
+  const { apikey, rpcapi } = params;
+  if (!!apikey && !isEmpty(apikey)) {
+    return await etherscan_getTotalBalance(addresses, apikey, progress);
+  }
+  return await web3_getTotalBalance(addresses, { rpcapi }, progress);
 };

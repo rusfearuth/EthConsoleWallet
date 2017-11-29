@@ -14,7 +14,7 @@ import type { TransactionType } from '../requests/etherscan.types';
 import { getApikey, getIpc, getRpcApi } from '../config';
 import { isEmpty } from 'lodash';
 import { txutils, signing } from 'eth-lightwallet';
-import { hasWallet, readWallet } from '../utils/store';
+import { hasWallet, readWallet, readAddresses } from '../utils/store';
 import type { TxOptionsType } from './transaction.types';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -25,7 +25,12 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
   const { from, to, password } = args;
 
   // Needed only for pass Flowtype chekcout
-  if (!from || !to || !password) {
+  if (!to || !password) {
+    console.log(
+      `${chalk.underline.red(
+        'WARNING:',
+      )} You should set to and password options as a minimum.`,
+    );
     return;
   }
 
@@ -37,20 +42,106 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
     );
     return;
   }
-  const txOptions = await _prepareTxOptions(from, to, {
+
+  if (!!from) {
+    await _sendEntireAmoutFromTo(args, { from, to, password, apikey, rpcapi });
+    return;
+  }
+  await _sendEntireAmoutOfWalletTo(args, {
+    to,
+    password,
     apikey,
     rpcapi,
   });
-  const txSigned: ?string = await _buildAndSignTx(
-    args,
-    from,
-    password,
-    txOptions,
-  );
+};
+
+const _sendEntireAmoutOfWalletTo = async (
+  args: ArgsType,
+  params: {
+    to: string,
+    password: string,
+    apikey: ?string,
+    rpcapi: ?string,
+  },
+): Promise<*> => {
+  const apikey = await getApikey(args);
+  const rpcapi = await getRpcApi(args);
+
+  const { file } = args;
+
+  let addresses: string[] = [];
+  if (!!file) {
+    addresses = await readAddresses(args);
+  } else {
+    const result: boolean = await hasWallet(args);
+    if (!result) {
+      return null;
+    }
+    const _keystore = await readWallet(args);
+    addresses = _keystore.getAddresses();
+  }
+
+  let txs: string[] = [];
+  let spinner = ora('Creating transactions... 0%').start();
+  for (let i = 0; i < addresses.length; i++) {
+    const address: string = addresses[i];
+    const txSigned: ?string = await _prepareTxSigned(args, false, {
+      from: address,
+      ...params,
+    });
+
+    //const percent = new BigNumber(String(i * 100 / addresses.length)).floor();
+    const percent = (i * 100 / addresses.length).toFixed(2);
+    spinner.text = `Creating transactions... ${percent}%`;
+
+    if (!txSigned) {
+      continue;
+    }
+
+    txs.push(txSigned);
+  }
+  spinner.succeed(`Transactions've been created - ${txs.length}`);
+
+  spinner = ora('Sending transaction... 0%').start();
+
+  let txHashes: string[] = [];
+
+  for (let i = 0; i < txs.length; i++) {
+    const tx: string = txs[i];
+    const { result } = await sendSignedTransaction(tx, {
+      apikey,
+      rpcapi,
+    });
+    const percent = (i * 100 / addresses.length).toFixed(2);
+    spinner.text = `Sending transaction... ${percent}%`;
+    txHashes.push(result);
+  }
+
+  const txLinks = txHashes
+    .map(tx => `\nhttps://etherscan.io/tx/${tx}`)
+    .reduce((accumulator, currentValue) => accumulator + currentValue);
+  const congrate = `Your transaction are ${txLinks}`;
+  spinner.succeed(congrate);
+};
+
+const _sendEntireAmoutFromTo = async (
+  args: ArgsType,
+  params: {
+    from: string,
+    to: string,
+    password: string,
+    apikey: ?string,
+    rpcapi: ?string,
+  },
+): Promise<*> => {
+  const txSigned: ?string = await _prepareTxSigned(args, true, params);
+
   if (!txSigned) {
-    console.log(`${chalk.underline.red('WARNING:')} Tx hasn't been created`);
     return;
   }
+
+  const { apikey, rpcapi } = params;
+
   let spinner = ora('Sending transaction...').start();
   const { result } = await sendSignedTransaction(txSigned, {
     apikey,
@@ -63,30 +154,78 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
   spinner.succeed(congrate);
 };
 
+const _prepareTxSigned = async (
+  args: ArgsType,
+  logs: boolean,
+  params: {
+    from: string,
+    to: string,
+    password: string,
+    apikey: ?string,
+    rpcapi: ?string,
+  },
+): Promise<*> => {
+  const { from, to, password, apikey, rpcapi } = params;
+  const txOptions = await _prepareTxOptions(
+    from,
+    to,
+    {
+      apikey,
+      rpcapi,
+    },
+    logs,
+  );
+  if (!txOptions) {
+    logs &&
+      console.log(
+        `${chalk.underline.red('WARNING:')} You don't have enough balance`,
+      );
+    return null;
+  }
+  const txSigned: ?string = await _buildAndSignTx(
+    args,
+    from,
+    password,
+    txOptions,
+  );
+  if (!txSigned) {
+    logs &&
+      console.log(`${chalk.underline.red('WARNING:')} Tx hasn't been created`);
+    return null;
+  }
+  return txSigned;
+};
+
 const _prepareTxOptions = async (
   from: string,
   to: string,
   config: RequestParamsType,
-): Promise<TxOptionsType> => {
-  let spinner = ora('Loading gas price').start();
+  logs?: boolean = true,
+): Promise<TxOptionsType | null> => {
+  let spinner = (logs && ora('Loading gas price').start()) || null;
   let resp = await gasPrice(config);
 
   const price = toBigNumber(resp.result);
-  spinner.succeed(`Gas price is ${chalk.green(resp.result)}`);
-  spinner = ora('Loading transaction count').start();
+  spinner && spinner.succeed(`Gas price is ${chalk.green(resp.result)}`);
+  spinner = (logs && ora('Loading transaction count').start()) || null;
 
   resp = await getTransactionCount(from, config);
   const nonce = resp.result;
-  spinner.succeed(`Transaction count is ${chalk.green(resp.result)}`);
-  spinner = ora('Loading address balance').start();
+  spinner &&
+    spinner.succeed(`Transaction count is ${chalk.green(resp.result)}`);
+  spinner = (logs && ora('Loading address balance').start()) || null;
 
   resp = await getBalance(from, config);
   const total = toBigNumber(resp.result);
-  spinner.succeed(
-    `Balance of ${chalk.green(from)} is ${chalk.green(resp.result)}`,
-  );
+  spinner &&
+    spinner.succeed(
+      `Balance of ${chalk.green(from)} is ${chalk.green(resp.result)}`,
+    );
   const gasLimit = toBigNumber(21000);
   const value = _calcMaxAmount(gasLimit, price, total);
+  if (value < 0) {
+    return null;
+  }
   return {
     from,
     to,
