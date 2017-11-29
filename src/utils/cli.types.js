@@ -40,3 +40,5 @@ export type ArgsType = {|
   // Version
   +version?: boolean,
 |};
+
+export type FilterType = (key: string) => boolean;

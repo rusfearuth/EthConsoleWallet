@@ -4,8 +4,8 @@ import commandLineArgs from 'command-line-args';
 import getUsage from 'command-line-usage';
 import path from 'path';
 import os from 'os';
-import type { CliOptionType, ArgsType } from './cli.types';
-import { isEmpty } from 'lodash';
+import type { CliOptionType, ArgsType, FilterType } from './cli.types';
+import { isEmpty, omitBy } from 'lodash';
 import chalk from 'chalk';
 import pkg from '../../package.json';
 
@@ -24,7 +24,7 @@ const options: CliOptionType[] = [
   { name: 'state', type: Boolean },
 
   // Wallet balance
-  { name: 'walletBalance', type: Boolean },
+  { name: 'wallet-balance', type: Boolean },
 
   // Generate addresses
   { name: 'generate', type: Boolean },
@@ -39,13 +39,13 @@ const options: CliOptionType[] = [
   { name: 'rpc', type: String },
 
   // Withdraw ETH
-  { name: 'withdrawAll', type: Boolean },
+  { name: 'withdraw-all', type: Boolean },
   { name: 'from', type: String },
   { name: 'to', type: String },
 
   // Config params
   { name: 'add', type: Boolean },
-  { name: 'etherscanToken', type: String },
+  { name: 'etherscan-token', type: String },
   { name: 'rpcapi', type: String },
 
   // Help
@@ -55,7 +55,36 @@ const options: CliOptionType[] = [
   { name: 'version', alias: 'v', type: Boolean },
 ];
 
-export const args: ArgsType = commandLineArgs(options, { partial: true });
+const _invalidateArgs = (args: Object): ArgsType => {
+  let filters: FilterType[] = [];
+  if (!!args['wallet-balance']) {
+    args = { ...args, walletBalance: args['wallet-balance'] };
+    filters.push(key => key === 'wallet-balance');
+  }
+  if (!!args['withdraw-all']) {
+    args = { ...args, withdrawAll: args['withdraw-all'] };
+    filters.push(key => key === 'withdraw-all');
+  }
+  if (!!args['etherscan-token']) {
+    args = { ...args, etherscanToken: args['etherscan-token'] };
+    filters.push(key => key === 'etherscan-token');
+  }
+
+  const filterFunc = (value: any, key: string): boolean =>
+    filters
+      .map((func: FilterType) => func(key))
+      .reduce(
+        (accumulator: boolean, currentValue: boolean) =>
+          accumulator || currentValue,
+        false,
+      );
+
+  return omitBy(args, filterFunc);
+};
+
+export const args: ArgsType = _invalidateArgs(
+  commandLineArgs(options, { partial: true }),
+);
 
 export const isInitWallet = ({ init }: ArgsType): boolean => !!init;
 export const checkInitWalletPass = ({ password }: ArgsType): boolean =>
@@ -126,7 +155,7 @@ const _man = [
         description: 'Print information about wallet state',
       },
       {
-        name: 'walletBalance',
+        name: 'wallet-balance',
         description: 'Print sum of amounts from all wallet addresses',
       },
     ],
@@ -195,7 +224,7 @@ const _man = [
         description: 'Add or update config option',
       },
       {
-        name: 'etherscanToken',
+        name: 'etherscan-token',
         typeLabel: 'apikey',
         description:
           '[underline]{Optional}. Api key from [underline]{https://etherscan.io/}. This key will be used for getting balance or send amount of ETH.',
@@ -225,7 +254,7 @@ const _man = [
   {
     optionList: [
       {
-        name: 'withdrawAll',
+        name: 'withdraw-all',
         description: 'Withdraw all exist amount',
       },
       {

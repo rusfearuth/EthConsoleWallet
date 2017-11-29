@@ -44,7 +44,7 @@ If you want to create a bundle of addresses and manage them, you will need to ad
 Before, you use this command, you will need to create MY_ETHERSCAN_TOKEN at [Etherscan](https://etherscan.io) and add it to config.
 
 ```bash
-$ eth-console-wallet --add --etherscanToken MY_ETHERSCAN_TOKEN
+$ eth-console-wallet --add --etherscan-token MY_ETHERSCAN_TOKEN
 ```
 
 Or, if you have your own node, you can run it with the next options:
@@ -70,7 +70,7 @@ $ eth-console-wallet --balance --address 0xMyAddress
 **NOTICE**: Now, it can send only all amount.
 
 ```bash
-$ eth-console-wallet --withdrawAll --from 0xMyAddress --to 0xAnotherWallet --password MY_PASSWORD
+$ eth-console-wallet --withdraw-all --from 0xMyAddress --to 0xAnotherWallet --password MY_PASSWORD
 ```
 
 ## Roadmap
