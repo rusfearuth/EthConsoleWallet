@@ -3,7 +3,7 @@
 import 'babel-polyfill';
 import { initWallet, stateWallet, totalBalance } from './wallet';
 import { generateAddresses, balanceByAddress } from './wallet/account';
-import { sendEntireAmount } from './wallet/transaction';
+import { sendEntireAmount, sendValue } from './wallet/transaction';
 import type { ArgsType } from './utils/cli.types';
 import {
   isInitWallet,
@@ -16,6 +16,8 @@ import {
   checkBalanceParams,
   isWithdrawAll,
   checkWithdrawParams,
+  isSend,
+  checkSendParams,
   isAdd,
   checkConfigParams,
   isHelp,
@@ -59,6 +61,12 @@ export default class App {
           return;
         }
         await sendEntireAmount(args);
+      } else if (isSend(args)) {
+        if (!checkSendParams(args)) {
+          defaultMessage();
+          return;
+        }
+        await sendValue(args);
       } else if (isAdd(args)) {
         if (!checkConfigParams(args)) {
           defaultMessage();

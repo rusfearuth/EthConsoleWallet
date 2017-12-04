@@ -68,7 +68,7 @@ export const getTotalBalance = async (
   return result;
 };
 
-export const gasPrice = async (config: Web3ProviderType): Promise<*> => {
+export const getGasPrice = async (config: Web3ProviderType): Promise<*> => {
   const web3 = _getWeb3Client(config);
   const result = await web3.eth.getGasPrice();
   return {

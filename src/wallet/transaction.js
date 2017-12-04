@@ -1,10 +1,11 @@
 // @flow
 
 import type { ArgsType } from '../utils/cli.types';
-import utils from 'web3-utils';
+import { gasPriceValue } from '../utils/numbers';
+import { utils } from 'web3';
 import {
   getBalance,
-  gasPrice,
+  getGasPrice,
   getTransactionCount,
   sendSignedTransaction,
 } from '../requests/common';
@@ -53,6 +54,91 @@ export const sendEntireAmount = async (args: ArgsType): Promise<*> => {
     apikey,
     rpcapi,
   });
+};
+
+export const sendValue = async (args: ArgsType): Promise<*> => {
+  const apikey = await getApikey(args);
+  const rpcapi = await getRpcApi(args);
+  const { from, to, value, fee, password } = args;
+
+  // Needed only for pass Flowtype chekcout
+  if (!from || !to || !value || !fee || !password) {
+    console.log(
+      `${chalk.underline.red(
+        'WARNING:',
+      )} You should set from, to, value, fee and password options as a minimum.`,
+    );
+    return;
+  }
+
+  if (!apikey && !rpcapi) {
+    console.log(
+      `${chalk.underline.red(
+        'WARNING:',
+      )} Please pass apikey from https://etherscan.io.`,
+    );
+    return;
+  }
+
+  let spinner = ora('Getting gas price...').start();
+  const netGasPrice = await getGasPrice({ apikey, rpcapi });
+  spinner.succeed(
+    `Gas price is ${utils.fromWei(
+      toBigNumber(netGasPrice.result).toString(),
+      'Gwei',
+    )} Gwei`,
+  );
+  const gasLimit = toBigNumber(21000);
+  const factor = gasPriceValue[fee];
+  const price = toBigNumber(netGasPrice.result).mul(factor);
+  const valueInWei = toBigNumber(utils.toWei(value, 'ether'));
+
+  // Needed for checkout
+  const valueWithFee = valueInWei.add(gasLimit.mul(price));
+
+  const balanceResp = await getBalance(from, { apikey, rpcapi });
+  spinner = ora(`Getting ${from} balance...`);
+  const balance = toBigNumber(balanceResp.result);
+  spinner.succeed(
+    `The balance of ${from} is ${utils.fromWei(
+      balance.toString(),
+      'ether',
+    )} / ${balance.toString()} wei`,
+  );
+
+  if (!_assertBalance(balance, valueWithFee)) {
+    return;
+  }
+
+  const nonce = await getTransactionCount(from, { apikey, rpcapi });
+
+  const txOptions = {
+    from,
+    to,
+    gasLimit: utils.toHex(gasLimit),
+    gasPrice: utils.toHex(price),
+    value: utils.toHex(valueInWei),
+    nonce: utils.toHex(nonce.result),
+  };
+
+  const txSigned: ?string = await _buildAndSignTx(
+    args,
+    from,
+    password,
+    txOptions,
+  );
+  if (!txSigned) {
+    console.log(`${chalk.underline.red('WARNING:')} Tx hasn't been created`);
+    return;
+  }
+
+  spinner = ora('Sending transaction...').start();
+  const { result } = await sendSignedTransaction(txSigned, { apikey, rpcapi });
+
+  const congrate = `Your transaction is ${chalk.green(
+    result,
+  )}.\nYou can check it at https://etherscan.io/tx/${result}`;
+  spinner.succeed(congrate);
 };
 
 const _sendEntireAmoutOfWalletTo = async (
@@ -203,7 +289,7 @@ const _prepareTxOptions = async (
   logs?: boolean = true,
 ): Promise<TxOptionsType | null> => {
   let spinner = (logs && ora('Loading gas price').start()) || null;
-  let resp = await gasPrice(config);
+  let resp = await getGasPrice(config);
 
   const price = toBigNumber(resp.result);
   spinner && spinner.succeed(`Gas price is ${chalk.green(resp.result)}`);
@@ -266,4 +352,23 @@ const _keyFromPassword = (vault: Object, password: string): Promise<*> => {
       rej(err);
     });
   });
+};
+
+const _assertBalance = (balance, valueWithFee) => {
+  const amountAfterSending = balance.sub(valueWithFee);
+  if (amountAfterSending < 0) {
+    console.error(
+      chalk.red(
+        `You can't send value + fee (${utils.fromWei(
+          valueWithFee.toString(),
+          'ether',
+        )}) more than your balance (${utils.fromWei(
+          balance.toString(),
+          'ether',
+        )}).`,
+      ),
+    );
+    return false;
+  }
+  return true;
 };

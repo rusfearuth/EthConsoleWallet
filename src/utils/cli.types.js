@@ -1,4 +1,5 @@
 // @flow
+import { gasPriceValue } from './numbers';
 
 export type CliOptionType = {|
   +name: string,
@@ -7,6 +8,8 @@ export type CliOptionType = {|
   +defaultOption?: boolean,
   +defaultValue?: string | number | boolean,
 |};
+
+export type SendingFeeType = $Keys<typeof gasPriceValue>;
 
 export type ArgsType = {|
   +init?: boolean,
@@ -31,6 +34,10 @@ export type ArgsType = {|
   +from?: string,
   +to?: string,
   +file?: string,
+  // Send
+  +send?: boolean,
+  +value?: string,
+  +fee: SendingFeeType,
   // Config
   +add?: boolean,
   +etherscanToken?: string,

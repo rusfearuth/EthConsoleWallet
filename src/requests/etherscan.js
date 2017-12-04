@@ -26,7 +26,7 @@ export const getTransactionCount = (
 ): Promise<TransactionCountType> =>
   fetchGet(BASE_URL, {}, _mapToGetTransactionQueryParams(address, apikey));
 
-export const gasPrice = (apikey: string): Promise<GasPriceType> =>
+export const getGasPrice = (apikey: string): Promise<GasPriceType> =>
   fetchGet(BASE_URL, { timeout: 30000 }, _mapToGasPriceQueryParams(apikey));
 
 export const sendSignedTransaction = (

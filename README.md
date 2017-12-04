@@ -59,15 +59,21 @@ and you can add `rpcapi` to your wallet config:
 $ eth-console-wallet --add --rpcapi http://address:port
 ```
 
-Now, you may ask your account balance.
+Now, you may get your account balance.
 
 ```bash
 $ eth-console-wallet --balance --address 0xMyAddress
 ```
 
-### Send entire amount from wallet address
+### Send ETH
 
-**NOTICE**: Now, it can send only all amount.
+if you want to send some custom value from your account address to another, you will be able to use the next command:
+
+```bash
+$ eth-console-wallet --send --from 0xAddress1 --to 0xAddress2 --value SOME_VALUE_IN_ETHER --fee (low/medium/fast) --password MY_PASSWORD
+```
+
+if you want to send entire amount from your account address to another (fee will be max automatically), you will be able to use the next command:
 
 ```bash
 $ eth-console-wallet --withdraw-all --from 0xMyAddress --to 0xAnotherWallet --password MY_PASSWORD
@@ -75,7 +81,6 @@ $ eth-console-wallet --withdraw-all --from 0xMyAddress --to 0xAnotherWallet --pa
 
 ## Roadmap
 
-* Add sending of custome amount
 * Add state for addresses
 * Clean source code
 

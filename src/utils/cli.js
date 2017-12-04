@@ -5,6 +5,7 @@ import getUsage from 'command-line-usage';
 import path from 'path';
 import os from 'os';
 import type { CliOptionType, ArgsType, FilterType } from './cli.types';
+import { gasPriceValue } from './numbers';
 import { isEmpty, omitBy } from 'lodash';
 import chalk from 'chalk';
 import pkg from '../../package.json';
@@ -43,6 +44,11 @@ const options: CliOptionType[] = [
   { name: 'from', type: String },
   { name: 'to', type: String },
   { name: 'file', type: String },
+
+  // Send ETH
+  { name: 'send', type: Boolean },
+  { name: 'value', type: String },
+  { name: 'fee', type: String, defaultValue: Object.keys(gasPriceValue)[1] }, // low / medium / max
 
   // Config params
   { name: 'add', type: Boolean },
@@ -108,6 +114,15 @@ export const isWithdrawAll = ({ withdrawAll }: ArgsType): boolean =>
   !!withdrawAll;
 export const checkWithdrawParams = ({ from, to }: ArgsType): boolean =>
   !!to && !isEmpty(to);
+
+export const isSend = ({ send }: ArgsType): boolean => !!send;
+export const checkSendParams = ({ from, to, value, fee }: ArgsType): boolean =>
+  !!from &&
+  !!to &&
+  !!value &&
+  !isEmpty(value) &&
+  !!fee &&
+  Object.keys(gasPriceValue).includes(fee);
 
 export const isAdd = ({ add }: ArgsType): boolean => !!add;
 export const checkConfigParams = ({

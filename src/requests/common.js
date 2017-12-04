@@ -1,28 +1,30 @@
 // @flow
 
 import {
-  gasPrice as etherscan_gasPrice,
+  getGasPrice as etherscan_getGasPrice,
   getTransactionCount as etherscan_getTransactionCount,
   getBalance as etherscan_getBalance,
   sendSignedTransaction as etherscan_sendSignedTransaction,
   getTotalBalance as etherscan_getTotalBalance,
 } from '../requests/etherscan';
 import {
-  gasPrice as web3_gasPrice,
+  getGasPrice as web3_getGasPrice,
   getTransactionCount as web3_getTransactionCount,
   getBalance as web3_getBalance,
   sendSignedTransaction as web3_sendSignedTransaction,
   getTotalBalance as web3_getTotalBalance,
 } from '../requests/web3';
+import { utils } from 'web3';
 import type { RequestParamsType } from './common.types';
 import { isEmpty } from 'lodash';
 
-export const gasPrice = async (params: RequestParamsType): Promise<*> => {
+export const getGasPrice = async (params: RequestParamsType): Promise<*> => {
   const { apikey, rpcapi } = params;
   if (!!apikey && !isEmpty(apikey)) {
-    return await etherscan_gasPrice(apikey);
+    const result = await etherscan_getGasPrice(apikey);
+    return { ...result, result: utils.hexToNumber(result.result) };
   }
-  return await web3_gasPrice({ rpcapi });
+  return await web3_getGasPrice({ rpcapi });
 };
 
 export const getTransactionCount = async (

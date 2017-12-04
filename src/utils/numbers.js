@@ -22,3 +22,9 @@ export const isHex = (
     : isString(hex) || isNumber(hex);
   return checkTypes && /^(-)?0x[0-9a-f]+$/i.test(String(hex));
 };
+
+export const gasPriceValue = {
+  low: toBigNumber(0.2),
+  medium: toBigNumber(0.25),
+  max: toBigNumber(1),
+};
